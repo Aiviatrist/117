@@ -17,8 +17,14 @@ function setup(){
     canvas=createCanvas(280,280);
     canvas.center();
     background("white");
+    canvas.mouseReleased(classifyCanvas);
+    synth=window.speechSynthesis;
 }
 function draw(){
+stroke(0);
+if(mouseIsPressed){
+    line(pmouseX,pmouseY,mouseX,mouseY);
+}
     cs();
     if(drawn_sketch==sketch){
       answer_holder="set";
@@ -36,5 +42,26 @@ function cs(){
     if(timer_check=="completed"|| answer_holder=="set"){
         answer_holder="";
         timer_check=""; 
+    }
+}
+
+
+function preload(){
+    classifier=ml5.imageClassifier("DoodleNet");
+}
+
+function classifyCanvas(){
+    classifier.classify(canvas,gotResults);
+}
+function gotResults(error,results){
+    if(error){
+        console.error(error);
+    }
+    else{
+        console.log(results);
+        document.getElementById("l").innerHTML="Label: "+results[0].label;
+        document.getElementById("c").innerHTML="Confidence: "+ Math.round(results[0].confidence*100)+"%";
+        utterthis= new SpeechSynthesisUtterance(results[0].label);
+        synth.speak(utterthis);
     }
 }
